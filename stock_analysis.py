@@ -18,7 +18,8 @@ STOCKS = {
     "클래시스": "클래시스",
     "Netflix": "Netflix NFLX stock",
     "CoreWeave": "CoreWeave CRWV stock",
-    "Tempus AI": "Tempus AI TEM stock"
+    "Tempus AI": "Tempus AI TEM stock",
+    "부동산": "부동산"
 }
 # 종목 추가 예시: "Tesla": "Tesla TSLA stock news"
 # 종목 삭제 예시: 해당 줄 삭제 또는 # 주석 처리
