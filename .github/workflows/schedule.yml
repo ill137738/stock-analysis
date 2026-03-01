@@ -1,0 +1,31 @@
+name: Stock Analysis
+
+on:
+  schedule:
+    # 매일 20:55 KST = 11:55 UTC
+    - cron: '55 11 * * *'
+  workflow_dispatch:  # 수동 실행 버튼
+
+jobs:
+  stock-analysis:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run stock analysis
+        env:
+          BRAVE_API_KEY: ${{ secrets.BRAVE_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python stock_analysis.py
