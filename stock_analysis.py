@@ -42,7 +42,7 @@ def search_news(stock_name, search_query):
     params = {
         "q": search_query,
         "count": NEWS_COUNT,
-        "freshness": "pw"
+        "freshness": "pd"
     }
     if has_korean:
         params["search_lang"] = "ko"
