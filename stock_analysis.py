@@ -60,6 +60,12 @@ def search_news(stock_name, search_query):
             description = item.get("description", "")
             source = item.get("meta_url", {}).get("hostname", "") or item.get("source", "")
             age = item.get("age", "")
+
+            # 24시간 넘은 뉴스 제외 (days ago, weeks ago, months ago)
+            age_lower = age.lower()
+            if any(w in age_lower for w in ["day", "week", "month", "year", "일 전", "주 전", "달 전"]):
+                continue
+
             news_items.append({
                 "title": title,
                 "description": description,
