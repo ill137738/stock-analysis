@@ -6,7 +6,7 @@ on:
     - cron: '05 15 * * *'
   workflow_dispatch:  # 수동 실행 버튼
   repository_dispatch:
-  types: [cron-trigger]
+    types: [cron-trigger]
 
 jobs:
   stock-analysis:
