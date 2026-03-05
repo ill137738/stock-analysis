@@ -15,7 +15,7 @@ STOCKS = {
     "CRSP": "CRISPR Therapeutics CRSP stock",
     "한화에어로스페이스": "한화에어로스페이스",
     "JOBY": "Joby Aviation JOBY stock",
-    "클래시스": "클래시스 주식 343510",
+    "클래시스": "클래시스 주식 214150",
     "Netflix": "Netflix NFLX stock",
     "CoreWeave": "CoreWeave CRWV stock",
     "Tempus AI": "Tempus AI TEM stock",
