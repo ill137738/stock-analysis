@@ -66,11 +66,13 @@ def search_news(stock_name, search_query):
             if any(w in age_lower for w in ["day", "week", "month", "year", "일 전", "주 전", "달 전"]):
                 continue
 
+            url_link = item.get("url", "")
             news_items.append({
                 "title": title,
                 "description": description,
                 "source": source,
-                "age": age
+                "age": age,
+                "url": url_link
             })
 
         return news_items if news_items else []
@@ -88,6 +90,8 @@ def analyze_all_stocks(news_data):
         for i, item in enumerate(items, 1):
             source_info = f" ({item['source']}" + (f", {item['age']}" if item['age'] else "") + ")"
             news_prompt += f"{i}. {item['title']}{source_info}\n"
+            if item.get('url'):
+                news_prompt += f"   URL: {item['url']}\n"
             if item['description']:
                 news_prompt += f"   {item['description']}\n"
         news_prompt += "\n"
@@ -104,8 +108,8 @@ def analyze_all_stocks(news_data):
 {{
   "종목명": {{
     "핵심뉴스": [
-      {{"내용": "뉴스 요약", "출처": "출처명", "시간": "시간정보"}},
-      {{"내용": "뉴스 요약", "출처": "출처명", "시간": "시간정보"}}
+      {{"내용": "뉴스 요약", "출처": "출처명", "시간": "시간정보", "url": "기사URL"}},
+      {{"내용": "뉴스 요약", "출처": "출처명", "시간": "시간정보", "url": "기사URL"}}
     ],
     "투자인사이트": "2~3줄 종합 인사이트",
     "긍정": ["긍정적 요인1", "긍정적 요인2", "긍정적 요인3"],
@@ -184,7 +188,11 @@ def format_message(stock_name, analysis):
     for item in analysis.get("핵심뉴스", []):
         source = item.get("출처", "")
         time_info = item.get("시간", "")
-        source_str = f" ({source}" + (f", {time_info}" if time_info else "") + ")" if source else ""
+        url_link = item.get("url", "")
+        if url_link:
+            source_str = f' (<a href="{url_link}">{source}</a>' + (f", {time_info}" if time_info else "") + ")" if source else f' (<a href="{url_link}">링크</a>)'
+        else:
+            source_str = f" ({source}" + (f", {time_info}" if time_info else "") + ")" if source else ""
         news_lines += f"• {item.get('내용', '')}{source_str}\n"
 
     positive_lines = ""
