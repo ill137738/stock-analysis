@@ -221,7 +221,13 @@ def main():
         print(f"  - {stock} 검색 중...")
         news_data[stock] = search_news(stock, query)
 
-    print("\n🤖 DeepSeek 분석 중... (1회 호출)")
+    # 뉴스 없는 종목 제외
+    news_data = {k: v for k, v in news_data.items() if v}
+    if not news_data:
+        print("오늘 분석할 뉴스가 없습니다.")
+        return
+
+    print(f"\n🤖 DeepSeek 분석 중... ({len(news_data)}개 종목, 1회 호출)")
     analysis_result = analyze_all_stocks(news_data)
 
     if not analysis_result:
@@ -230,6 +236,9 @@ def main():
 
     print("\n📨 텔레그램 전송 중...")
     for stock in STOCKS:
+        if not news_data.get(stock):
+            print(f"  - {stock}: ⏭️ 오늘 뉴스 없음 (건너뜀)")
+            continue
         if stock in analysis_result:
             message = format_message(stock, analysis_result[stock])
             success = send_telegram(message)
