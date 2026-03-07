@@ -103,9 +103,12 @@ def analyze_all_stocks(news_data):
 
 {news_prompt}
 
+중요: 뉴스 목록에 해당 종목과 직접 관련된 내용이 없으면 "skip": true만 반환하세요.
+
 출력 형식 (이 형식 그대로, JSON만 출력):
 {{
   "종목명": {{
+    "skip": false,
     "핵심뉴스": [
       {{"내용": "뉴스 요약", "출처": "출처명", "시간": "시간정보", "url": "기사URL"}},
       {{"내용": "뉴스 요약", "출처": "출처명", "시간": "시간정보", "url": "기사URL"}}
@@ -114,6 +117,11 @@ def analyze_all_stocks(news_data):
     "긍정": ["긍정적 요인1", "긍정적 요인2", "긍정적 요인3"],
     "부정": ["부정적 요인1", "부정적 요인2", "부정적 요인3"]
   }}
+}}
+
+관련 뉴스 없을 때:
+{{
+  "종목명": {{"skip": true}}
 }}"""
 
     url = "https://openrouter.ai/api/v1/chat/completions"
@@ -247,7 +255,11 @@ def main():
             print(f"  - {stock}: ⏭️ 오늘 뉴스 없음 (건너뜀)")
             continue
         if stock in analysis_result:
-            message = format_message(stock, analysis_result[stock])
+            result = analysis_result[stock]
+            if result.get("skip"):
+                print(f"  - {stock}: ⏭️ 관련 뉴스 없음 (건너뜀)")
+                continue
+            message = format_message(stock, result)
             success = send_telegram(message)
             print(f"  - {stock}: {'✅ 전송 완료' if success else '❌ 실패'}")
             time.sleep(3)
