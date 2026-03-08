@@ -19,7 +19,6 @@ STOCKS = {
     "Netflix": "Netflix NFLX stock",
     "CoreWeave": "CoreWeave CRWV stock",
     "Tempus AI": "Tempus AI TEM stock",
-    "내부자 매수": "주식 내부자 매수",
     "이더리움": "ethereum"
 }
 # 종목 추가 예시: "Tesla": "Tesla TSLA stock news"
