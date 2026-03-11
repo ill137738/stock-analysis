@@ -19,9 +19,9 @@ STOCKS = {
     "Netflix": "Netflix NFLX stock",
     "CoreWeave": "CoreWeave CRWV stock",
     "Tempus AI": "Tempus AI TEM stock",
-    "삼천당제약": "삼천당제약",
     "레인보우로보틱스": "레인보우로보틱스",
-    "이더리움": "ethereum"
+    "이더리움": "ethereum",
+    "솔라나": "solana"
 }
 # 종목 추가 예시: "Tesla": "Tesla TSLA stock news"
 # 종목 삭제 예시: 해당 줄 삭제 또는 # 주석 처리
