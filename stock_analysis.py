@@ -20,6 +20,7 @@ STOCKS = {
     "CoreWeave": "CoreWeave CRWV stock",
     "Tempus AI": "Tempus AI TEM stock",
     "삼천당제약": "삼천당제약",
+    "레인보우로보틱스": "레인보우로보틱스",
     "이더리움": "ethereum"
 }
 # 종목 추가 예시: "Tesla": "Tesla TSLA stock news"
