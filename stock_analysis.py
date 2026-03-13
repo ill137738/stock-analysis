@@ -16,7 +16,7 @@ STOCKS = {
     "한화에어로스페이스": "한화에어로스페이스",
     "JOBY": "Joby Aviation JOBY stock",
     "클래시스": "클래시스 KOSDAQ 214150",
-    "Netflix": "Netflix NFLX stock",
+    "시프트업": "시프트업 krx 462870",
     "CoreWeave": "CoreWeave CRWV stock",
     "JYP Entertainment": "JYP Entertainment stock KOSDAQ 035900",
     "레인보우로보틱스": "레인보우로보틱스",
