@@ -18,7 +18,7 @@ STOCKS = {
     "클래시스": "클래시스 KOSDAQ 214150",
     "Netflix": "Netflix NFLX stock",
     "CoreWeave": "CoreWeave CRWV stock",
-    "Tempus AI": "Tempus AI TEM stock",
+    "JYP Entertainment": "JYP Entertainment stock KOSDAQ 035900",
     "레인보우로보틱스": "레인보우로보틱스",
     "이더리움": "ethereum",
     "솔라나": "solana"
