@@ -18,8 +18,6 @@ STOCKS = {
     "클래시스": "클래시스 KOSDAQ 214150",
     "시프트업": "시프트업 krx 462870",
     "CoreWeave": "CoreWeave CRWV stock",
-    "JYP Entertainment": "JYP Entertainment stock KOSDAQ 035900",
-    "레인보우로보틱스": "레인보우로보틱스",
     "이더리움": "ethereum",
     "솔라나": "solana"
 }
