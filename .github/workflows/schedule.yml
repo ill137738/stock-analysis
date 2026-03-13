@@ -1,26 +1,19 @@
 name: Stock Analysis
-
 on:
-  workflow_dispatch:  # 수동 실행 버튼
+  workflow_dispatch: # 수동 실행 버튼
   repository_dispatch:
-    types: [cron-trigger]
+    types: [cron-trigger, monthly-trigger]
 
 jobs:
   stock-analysis:
+    if: github.event.action == 'cron-trigger' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
-      - name: Install dependencies
-        run: pip install requests
-
+      - run: pip install requests
       - name: Run stock analysis
         env:
           BRAVE_API_KEY: ${{ secrets.BRAVE_API_KEY }}
@@ -28,3 +21,19 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python stock_analysis.py
+
+  monthly-analysis:
+    if: github.event.action == 'monthly-trigger'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install requests
+      - name: Run monthly analysis
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python monthly_analysis.py
