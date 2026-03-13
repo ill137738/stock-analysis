@@ -1,3 +1,4 @@
+from stocks_config import STOCKS
 import requests
 import json
 import time
@@ -10,19 +11,6 @@ OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
 
-# 분석할 종목 목록 {표시명: 검색어} ← 여기서 종목 추가/수정/삭제하세요
-STOCKS = {
-    "CRSP": "CRISPR Therapeutics CRSP stock",
-    "한화에어로스페이스": "한화에어로스페이스",
-    "JOBY": "Joby Aviation JOBY stock",
-    "클래시스": "클래시스 KOSDAQ 214150",
-    "시프트업": "시프트업 krx 462870",
-    "CoreWeave": "CoreWeave CRWV stock",
-    "이더리움": "ethereum",
-    "솔라나": "solana"
-}
-# 종목 추가 예시: "Tesla": "Tesla TSLA stock news"
-# 종목 삭제 예시: 해당 줄 삭제 또는 # 주석 처리
 
 NEWS_COUNT = 15  # 종목당 뉴스 검색 수
 # =====================================
