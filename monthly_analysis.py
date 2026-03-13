@@ -82,9 +82,16 @@ def analyze_stock_monthly(stock_name, search_query, news_items):
             news_text += f"   {item['description']}\n"
     news_text = news_text or "최근 1달 내 관련 뉴스 없음"
 
-    user_prompt = f"""다음 종목에 대해 월간 심층 분석을 수행하세요: {stock_name}
+    today = datetime.now().strftime("%Y년 %m월 %d일")
+    user_prompt = f"""오늘은 {today}입니다. 다음 종목에 대해 월간 심층 분석을 수행하세요: {stock_name}
 
-[최근 1달 뉴스]
+⚠️ 중요 지시사항:
+- 아래 제공된 최근 1달 뉴스를 반드시 분석의 핵심 근거로 사용하세요
+- 학습 데이터(2024년 이전)에 의존하지 말고, 반드시 제공된 뉴스 기반으로 작성하세요
+- 재무 지표(실적, PER, PSR 등)는 뉴스에 언급된 최신 수치를 사용하세요
+- 뉴스에 없는 정보는 "최신 데이터 미확인"으로 명시하세요
+
+[최근 1달 뉴스 — 이것이 분석의 주요 근거입니다]
 {news_text}
 
 위 뉴스를 반드시 참고하여 아래 12개 섹션을 모두 포함하여 상세하게 분석하세요.
