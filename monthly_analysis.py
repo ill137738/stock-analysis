@@ -196,8 +196,10 @@ def analyze_stock_monthly(stock_name, search_query, news_items):
 - 뉴스와 데이터에 없는 정보는 "최신 데이터 미확인"으로 명시하세요
 - 주장이나 분석 근거로 뉴스를 사용할 때는 절대 뉴스 번호(8, 10, 14 같은 숫자)로 표기하지 마세요
 - 반드시 바로 옆에 (출처명, 시간, URL) 형식으로 실제 링크를 포함하세요
-- 예시: "피지컬 AI 합작법인 설립 진전 (한국경제, 2 days ago, https://www.hankyung.com/...)"
-- URL이 없는 뉴스는 (출처명, 시간) 형식으로만 표기하세요
+- 출처 표기 형식: (언론사명, 시간, URL) — 기사 제목은 절대 쓰지 마세요
+- 예시: "전환사채 발행으로 주가 하락 (Motley Fool, 2 days ago, https://...)"
+- URL이 없는 뉴스는 (언론사명, 시간) 형식으로만 표기하세요
+- 언론사명은 짧게: "The Motley Fool" → "Motley Fool", "한국경제신문" → "한국경제"
 
 {yahoo_data}
 
