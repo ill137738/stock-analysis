@@ -185,6 +185,10 @@ def analyze_stock_monthly(stock_name, search_query, news_items):
             news_text += f"   {item['description']}\n"
         if url and source:
             source_url_map[source.lower()] = url
+            # 도메인에서 사람이 읽기 좋은 이름도 키로 추가
+            # 예: insidermonkey.com → insider monkey
+            readable = source.lower().replace('.com','').replace('.co.kr','').replace('.kr','').replace('www.','').replace('-',' ').replace('.',' ').strip()
+            source_url_map[readable] = url
     news_text = news_text or "최근 1달 내 관련 뉴스 없음"
 
     today = datetime.now().strftime("%Y년 %m월 %d일")
