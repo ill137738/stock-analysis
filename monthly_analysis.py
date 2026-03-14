@@ -190,6 +190,7 @@ def analyze_stock_monthly(stock_name, search_query, news_items):
 - 아래 제공된 야후 파이낸스 실시간 데이터와 최근 1달 뉴스를 반드시 분석의 핵심 근거로 사용하세요
 - 학습 데이터(2024년 이전)에 의존하지 말고, 제공된 데이터 기반으로 작성하세요
 - 뉴스와 데이터에 없는 정보는 "최신 데이터 미확인"으로 명시하세요
+- 주장이나 분석 근거로 뉴스를 사용할 때는 바로 옆에 (출처명, 시간) 형식으로 표기하고, URL이 있으면 반드시 포함하세요. 예: (The Block, 19 hours ago, https://...)
 
 {yahoo_data}
 
@@ -247,8 +248,8 @@ def analyze_stock_monthly(stock_name, search_query, news_items):
   → 이 값이 높을수록 성장 대비 저평가 의미. 1.0 이상이면 양호, 0.5 미만이면 고평가 신호
 - 코인의 경우: 시총, 거래량, 도미넌스
 
-[Bull Case] 성장 동력 2~3가지
-[Bear Case] 주요 리스크 2~3가지
+🐂 Bull Case: 성장 동력 2~3가지
+🐻 Bear Case: 주요 리스크 2~3가지
 [좋은 적자 vs 나쁜 적자] 해당 시 구분하여 분석
 
 ---
@@ -356,6 +357,22 @@ def clean_markdown(text):
     return text
 
 
+def convert_urls_to_html(text):
+    """텍스트 내 (출처, 시간, URL) 패턴을 HTML 링크로 변환"""
+    import re
+    # (출처명, 시간, https://...) 패턴 → <a href="URL">출처명, 시간</a>
+    def replace_citation(m):
+        inner = m.group(1)
+        url_match = re.search(r'https?://\S+', inner)
+        if url_match:
+            url = url_match.group(0).rstrip(').,')
+            label = re.sub(r'https?://\S+', '', inner).strip(', ')
+            return f'(<a href="{url}">{label}</a>)'
+        return m.group(0)
+    text = re.sub(r'\(([^)]*https?://[^)]+)\)', replace_citation, text)
+    return text
+
+
 def send_telegram(message, use_html=False):
     """텔레그램 메시지 전송 (챕터 단위로 분할)"""
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
@@ -371,25 +388,50 @@ def send_telegram(message, use_html=False):
         message = re.sub(r'#\s*', '', message)
         message = re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', message)
         message = re.sub(r'\*(.+?)\*', r'\1', message)
+        message = convert_urls_to_html(message)
 
-    # 챕터(이모지로 시작하는 줄) 기준으로 분할
+    # 챕터 단위로 먼저 분리
     import re
     max_len = 4000
+    chapter_pattern = re.compile(r'^[🧬🎯⚔️🚀📈🧭💰🚪📊📎🏦📉🕵️]', re.MULTILINE)
+
+    # 챕터 경계 찾기
+    lines = message.split('\n')
+    chapters = []
+    current_chapter = []
+    for line in lines:
+        if chapter_pattern.match(line) and current_chapter:
+            chapters.append('\n'.join(current_chapter))
+            current_chapter = [line]
+        else:
+            current_chapter.append(line)
+    if current_chapter:
+        chapters.append('\n'.join(current_chapter))
+
+    # 챕터를 4000자 이내로 묶기 (챕터는 절대 중간에 자르지 않음)
     chunks = []
     current = ""
-
-    lines = message.split('\n')
-    for line in lines:
-        # 챕터 시작 감지 (숫자+점+이모지 또는 이모지로 시작하는 섹션)
-        is_chapter = re.match(r'^[🧬🎯⚔️🚀📈🧭💰🚪📊📎]', line)
-        if is_chapter and current and len(current) + len(line) > max_len:
+    for chapter in chapters:
+        if len(chapter) > max_len:
+            # 챕터 자체가 너무 길면 어쩔 수 없이 줄 단위로 분할
+            if current:
+                chunks.append(current.strip())
+                current = ""
+            sub_lines = chapter.split('\n')
+            sub_current = ""
+            for sub_line in sub_lines:
+                if len(sub_current) + len(sub_line) + 1 > max_len:
+                    chunks.append(sub_current.strip())
+                    sub_current = sub_line + '\n'
+                else:
+                    sub_current += sub_line + '\n'
+            if sub_current.strip():
+                chunks.append(sub_current.strip())
+        elif len(current) + len(chapter) + 1 > max_len:
             chunks.append(current.strip())
-            current = line + '\n'
-        elif len(current) + len(line) + 1 > max_len:
-            chunks.append(current.strip())
-            current = line + '\n'
+            current = chapter + '\n'
         else:
-            current += line + '\n'
+            current += chapter + '\n'
 
     if current.strip():
         chunks.append(current.strip())
@@ -435,17 +477,7 @@ def main():
         analysis = analyze_stock_monthly(stock_name, search_query, news_items)
 
         if analysis:
-            # 출처 링크 목록 구성
-            links_text = "\n\n📎 <b>참고 기사</b>\n"
-            for i, item in enumerate(news_items, 1):
-                if item.get('url'):
-                    source = item.get('source', '링크')
-                    age = item.get('age', '')
-                    age_str = f", {age}" if age else ""
-                    title_short = item['title'][:60]
-                    links_text += f"{i}. <a href=\"{item['url']}\">{title_short}</a> ({source}{age_str})\n"
-
-            full_message = f"🎯 <b>[{stock_name}] 월간 심층 분석</b>\n\n{analysis}{links_text}"
+            full_message = f"🎯 <b>[{stock_name}] 월간 심층 분석</b>\n\n{analysis}"
             success = send_telegram(full_message, use_html=True)
             print(f"  - {stock_name}: {'✅ 전송 완료' if success else '❌ 전송 실패'}")
         else:
