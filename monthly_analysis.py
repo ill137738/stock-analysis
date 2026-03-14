@@ -377,29 +377,30 @@ def clean_markdown(text):
     return text
 
 
-def convert_urls_to_html(text, source_url_map=None):
-    """텍스트 내 (출처, 시간, URL) 패턴을 HTML 링크로 변환"""
+def convert_urls_to_html(text, source_url_map=None, news_index_map=None):
+    """[번호] 형식 참조를 HTML 링크로 변환"""
     import re
 
-    # (출처명, 시간, https://...) 패턴 → <a href="URL">출처명, 시간</a>
-    def replace_citation(m):
-        inner = m.group(1)
-        url_match = re.search(r'https?://\S+', inner)
-        if url_match:
-            url = url_match.group(0).rstrip(').,')
-            label = re.sub(r'https?://\S+', '', inner).strip(', ')
-            return f'(<a href="{url}">{label}</a>)'
-        # URL 없으면 source_url_map에서 찾기
-        if source_url_map:
-            for source, url in source_url_map.items():
-                if source.lower() in inner.lower():
-                    label = inner.strip()
-                    return f'(<a href="{url}">{label}</a>)'
-        return m.group(0)
+    if news_index_map:
+        def replace_index(m):
+            num = int(m.group(1))
+            info = news_index_map.get(num)
+            if info and info.get('url'):
+                source = info['source']
+                age = info.get('age', '')
+                label = source + (f", {age}" if age else "")
+                return f'<a href="{info["url"]}">{label}</a>'
+            elif info:
+                source = info['source']
+                age = info.get('age', '')
+                return f'({source}{", " + age if age else ""})'
+            return m.group(0)
+        text = re.sub(r'\[(\d+)\]', replace_index, text)
 
-    text = re.sub(r'\(([^)]{3,100})\)', replace_citation, text)
-    # 괄호 밖에 단독으로 남은 URL 제거
-    text = re.sub(r'(?<!["(])https?://\S+', '', text)
+    # 혹시 남은 단독 URL 제거
+    text = re.sub(r'(?<!["(])https?://[^\s)<]+', '', text)
+    # 빈 괄호 제거
+    text = re.sub(r'\(\s*,?\s*\)', '', text)
     return text
 
 
