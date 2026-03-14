@@ -279,7 +279,9 @@ def main():
             continue
 
         print(f"\n[{stock_name}] 분석 시작...")
-        analysis = analyze_stock_monthly(stock_name, search_query)
+        news_items = search_news_monthly(stock_name, search_query)
+        print(f"  뉴스 {len(news_items)}건 검색됨")
+        analysis = analyze_stock_monthly(stock_name, search_query, news_items)
 
         if analysis:
             # 종목 헤더 추가
