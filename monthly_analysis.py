@@ -104,8 +104,7 @@ PSR: {fmt(psr)}
         # 밸류에이션 효율 지표 계산
         if revenue_growth is not None and operating_margins is not None and psr is not None and psr > 0:
             val_score = (revenue_growth * 100 + operating_margins * 100) / 4 / psr
-            result += f"
-밸류에이션 효율 지표: {val_score:.2f} (1.0↑ 양호, 0.5↓ 고평가 신호)"
+            result += f"\n밸류에이션 효율 지표: {val_score:.2f} (1.0↑ 양호, 0.5↓ 고평가 신호)"
 
         return result
 
