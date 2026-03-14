@@ -170,19 +170,21 @@ MONTHLY_SYSTEM_PROMPT = """당신은 개인 투자자의 합리적인 의사결�
 def analyze_stock_monthly(stock_name, search_query, news_items):
     """단일 종목 월간 심층 분석"""
 
-    # 뉴스 텍스트 구성 + URL 맵 (출처명 → URL)
+    # 뉴스 텍스트 구성 + 인덱스 맵 (번호 → {source, age, url})
     news_text = ""
+    news_index_map = {}  # 번호 → 뉴스 정보
     source_url_map = {}  # 출처명 → URL 매핑
     for i, item in enumerate(news_items, 1):
         source = item['source']
         age = item.get('age', '')
         url = item.get('url', '')
-        source_info = f" ({source}" + (f", {age}" if age else "") + (f", {url}" if url else "") + ")"
-        news_text += f"{i}. {item['title']}{source_info}\n"
+        news_index_map[i] = {'source': source, 'age': age, 'url': url}
+        source_info = f" ({source}" + (f", {age}" if age else "") + ")"
+        news_text += f"[{i}] {item['title']}{source_info}\n"
         if item['description']:
             news_text += f"   {item['description']}\n"
         if url and source:
-            source_url_map[source] = url
+            source_url_map[source.lower()] = url
     news_text = news_text or "최근 1달 내 관련 뉴스 없음"
 
     today = datetime.now().strftime("%Y년 %m월 %d일")
@@ -356,10 +358,10 @@ def analyze_stock_monthly(stock_name, search_query, news_items):
         response = requests.post(url, headers=headers, json=payload, timeout=180)
         response.raise_for_status()
         data = response.json()
-        return data["choices"][0]["message"]["content"], source_url_map
+        return data["choices"][0]["message"]["content"], news_index_map, source_url_map
     except Exception as e:
         print(f"  {stock_name} 분석 오류: {e}")
-        return None, {}
+        return None, {}, {}
 
 
 def clean_markdown(text):
@@ -401,7 +403,7 @@ def convert_urls_to_html(text, source_url_map=None):
     return text
 
 
-def send_telegram(message, use_html=False, source_url_map=None):
+def send_telegram(message, use_html=False, source_url_map=None, news_index_map=None):
     """텔레그램 메시지 전송 (챕터 단위로 분할)"""
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
 
@@ -416,7 +418,7 @@ def send_telegram(message, use_html=False, source_url_map=None):
         message = re.sub(r'#\s*', '', message)
         message = re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', message)
         message = re.sub(r'\*(.+?)\*', r'\1', message)
-        message = convert_urls_to_html(message, source_url_map)
+        message = convert_urls_to_html(message, source_url_map, news_index_map)
 
     # 챕터 단위로 먼저 분리
     import re
@@ -502,11 +504,11 @@ def main():
         print(f"\n[{stock_name}] 분석 시작...")
         news_items = search_news_monthly(stock_name, search_query)
         print(f"  뉴스 {len(news_items)}건 검색됨")
-        analysis, source_url_map = analyze_stock_monthly(stock_name, search_query, news_items)
+        analysis, news_index_map, source_url_map = analyze_stock_monthly(stock_name, search_query, news_items)
 
         if analysis:
             full_message = f"🎯 <b>[{stock_name}] 월간 심층 분석</b>\n\n{analysis}"
-            success = send_telegram(full_message, use_html=True, source_url_map=source_url_map)
+            success = send_telegram(full_message, use_html=True, source_url_map=source_url_map, news_index_map=news_index_map)
             print(f"  - {stock_name}: {'✅ 전송 완료' if success else '❌ 전송 실패'}")
         else:
             print(f"  - {stock_name}: ❌ 분석 실패")
