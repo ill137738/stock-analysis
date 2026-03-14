@@ -112,6 +112,49 @@ PSR: {fmt(psr)}
         return f"데이터 조회 실패: {e}"
 
 
+def prettify_source(source):
+    """도메인을 읽기 좋은 언론사명으로 변환"""
+    mapping = {
+        'finance.yahoo.com': 'Yahoo Finance',
+        'yahoo.com': 'Yahoo Finance',
+        'insidermonkey.com': 'Insider Monkey',
+        'fool.com': 'Motley Fool',
+        'motleyfool.com': 'Motley Fool',
+        'benzinga.com': 'Benzinga',
+        'seekingalpha.com': 'Seeking Alpha',
+        'reuters.com': 'Reuters',
+        'bloomberg.com': 'Bloomberg',
+        'cnbc.com': 'CNBC',
+        'wsj.com': 'WSJ',
+        'ft.com': 'Financial Times',
+        'marketwatch.com': 'MarketWatch',
+        'investing.com': 'Investing.com',
+        'stockanalysis.com': 'Stock Analysis',
+        'stocktitan.net': 'StockTitan',
+        'coindesk.com': 'CoinDesk',
+        'cointelegraph.com': 'CoinTelegraph',
+        'theblock.co': 'The Block',
+        'coincentral.com': 'CoinCentral',
+        'hankyung.com': '한국경제',
+        'chosun.com': '조선일보',
+        'joins.com': '중앙일보',
+        'donga.com': '동아일보',
+        'mk.co.kr': '매일경제',
+        'yna.co.kr': '연합뉴스',
+        'newsis.com': '뉴시스',
+        'sedaily.com': '서울경제',
+        'edaily.co.kr': '이데일리',
+        'etnews.com': '전자신문',
+    }
+    s = source.lower()
+    for domain, name in mapping.items():
+        if domain in s:
+            return name
+    # 매핑 없으면 도메인 정제
+    readable = s.replace('www.','').replace('.com','').replace('.co.kr','').replace('.kr','').replace('-',' ').replace('.',' ').strip()
+    return readable.title()
+
+
 def search_news_monthly(stock_name, search_query):
     """브레이브 API로 1달치 뉴스 검색"""
     url = "https://api.search.brave.com/res/v1/news/search"
@@ -175,7 +218,8 @@ def analyze_stock_monthly(stock_name, search_query, news_items):
     news_index_map = {}  # 번호 → 뉴스 정보
     source_url_map = {}  # 출처명 → URL 매핑
     for i, item in enumerate(news_items, 1):
-        source = item['source']
+        source_raw = item['source']
+        source = prettify_source(source_raw)
         age = item.get('age', '')
         url = item.get('url', '')
         news_index_map[i] = {'source': source, 'age': age, 'url': url}
@@ -183,12 +227,9 @@ def analyze_stock_monthly(stock_name, search_query, news_items):
         news_text += f"[{i}] {item['title']}{source_info}\n"
         if item['description']:
             news_text += f"   {item['description']}\n"
-        if url and source:
+        if url:
             source_url_map[source.lower()] = url
-            # 도메인에서 사람이 읽기 좋은 이름도 키로 추가
-            # 예: insidermonkey.com → insider monkey
-            readable = source.lower().replace('.com','').replace('.co.kr','').replace('.kr','').replace('www.','').replace('-',' ').replace('.',' ').strip()
-            source_url_map[readable] = url
+            source_url_map[source_raw.lower()] = url
     news_text = news_text or "최근 1달 내 관련 뉴스 없음"
 
     today = datetime.now().strftime("%Y년 %m월 %d일")
