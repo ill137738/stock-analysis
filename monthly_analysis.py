@@ -312,7 +312,7 @@ def analyze_stock_monthly(stock_name, search_query, news_items):
         return None
 
 
-def send_telegram(message):
+def send_telegram(message, use_html=False):
     """텔레그램 메시지 전송 (긴 메시지 자동 분할)"""
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
 
@@ -334,6 +334,8 @@ def send_telegram(message):
             "text": chunk,
             "disable_web_page_preview": True
         }
+        if use_html:
+            payload["parse_mode"] = "HTML"
         try:
             response = requests.post(url, json=payload, timeout=10)
             response.raise_for_status()
@@ -366,9 +368,18 @@ def main():
         analysis = analyze_stock_monthly(stock_name, search_query, news_items)
 
         if analysis:
-            # 종목 헤더 추가
-            full_message = f"🎯 *[{stock_name}] 월간 심층 분석*\n\n{analysis}"
-            success = send_telegram(full_message)
+            # 출처 링크 목록 구성
+            links_text = "\n\n📎 <b>참고 기사</b>\n"
+            for i, item in enumerate(news_items, 1):
+                if item.get('url'):
+                    source = item.get('source', '링크')
+                    age = item.get('age', '')
+                    age_str = f", {age}" if age else ""
+                    title_short = item['title'][:60]
+                    links_text += f"{i}. <a href=\"{item['url']}\">{title_short}</a> ({source}{age_str})\n"
+
+            full_message = f"🎯 <b>[{stock_name}] 월간 심층 분석</b>\n\n{analysis}{links_text}"
+            success = send_telegram(full_message, use_html=True)
             print(f"  - {stock_name}: {'✅ 전송 완료' if success else '❌ 전송 실패'}")
         else:
             print(f"  - {stock_name}: ❌ 분석 실패")
