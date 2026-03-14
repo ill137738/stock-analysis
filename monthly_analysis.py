@@ -396,6 +396,8 @@ def convert_urls_to_html(text, source_url_map=None):
         return m.group(0)
 
     text = re.sub(r'\(([^)]{3,100})\)', replace_citation, text)
+    # 괄호 밖에 단독으로 남은 URL 제거
+    text = re.sub(r'(?<!["(])https?://\S+', '', text)
     return text
 
 
