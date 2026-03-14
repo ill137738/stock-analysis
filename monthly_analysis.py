@@ -312,20 +312,56 @@ def analyze_stock_monthly(stock_name, search_query, news_items):
         return None
 
 
+def clean_markdown(text):
+    """마크다운 기호 제거"""
+    import re
+    text = re.sub(r'###\s*', '', text)
+    text = re.sub(r'##\s*', '', text)
+    text = re.sub(r'#\s*', '', text)
+    text = re.sub(r'\*\*(.+?)\*\*', r'\1', text)
+    text = re.sub(r'\*(.+?)\*', r'\1', text)
+    text = re.sub(r'__(.+?)__', r'\1', text)
+    text = re.sub(r'_(.+?)_', r'\1', text)
+    return text
+
+
 def send_telegram(message, use_html=False):
-    """텔레그램 메시지 전송 (긴 메시지 자동 분할)"""
+    """텔레그램 메시지 전송 (챕터 단위로 분할)"""
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
 
-    # 텔레그램 최대 4096자 제한 → 분할 전송
+    # 마크다운 기호 제거
+    if not use_html:
+        message = clean_markdown(message)
+    else:
+        # HTML 모드에서도 ### ** 등 제거
+        import re
+        message = re.sub(r'###\s*', '', message)
+        message = re.sub(r'##\s*', '', message)
+        message = re.sub(r'#\s*', '', message)
+        message = re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', message)
+        message = re.sub(r'\*(.+?)\*', r'\1', message)
+
+    # 챕터(이모지로 시작하는 줄) 기준으로 분할
+    import re
     max_len = 4000
     chunks = []
-    while len(message) > max_len:
-        split_pos = message.rfind('\n', 0, max_len)
-        if split_pos == -1:
-            split_pos = max_len
-        chunks.append(message[:split_pos])
-        message = message[split_pos:].lstrip()
-    chunks.append(message)
+    current = ""
+
+    lines = message.split('\n')
+    for line in lines:
+        # 챕터 시작 감지 (숫자+점+이모지 또는 이모지로 시작하는 섹션)
+        is_chapter = re.match(r'^[🧬🎯⚔️🚀📈🧭💰🚪📊📎]', line)
+        if is_chapter and current and len(current) + len(line) > max_len:
+            chunks.append(current.strip())
+            current = line + '\n'
+        elif len(current) + len(line) + 1 > max_len:
+            chunks.append(current.strip())
+            current = line + '\n'
+        else:
+            current += line + '\n'
+
+    if current.strip():
+        chunks.append(current.strip())
 
     success = True
     for chunk in chunks:
