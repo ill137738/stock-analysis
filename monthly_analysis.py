@@ -397,6 +397,16 @@ def convert_urls_to_html(text, source_url_map=None, news_index_map=None):
             return m.group(0)
         text = re.sub(r'\[(\d+)\]', replace_index, text)
 
+    # (출처명, 시간) 패턴도 source_url_map으로 링크 변환
+    if source_url_map:
+        def replace_text_citation(m):
+            inner = m.group(1)
+            for source_key, url in source_url_map.items():
+                if source_key in inner.lower():
+                    return f'(<a href="{url}">{inner.strip()}</a>)'
+            return m.group(0)
+        text = re.sub(r'\(([^)]{3,80})\)', replace_text_citation, text)
+
     # 혹시 남은 단독 URL 제거
     text = re.sub(r'(?<!["(])https?://[^\s)<]+', '', text)
     # 빈 괄호 제거
