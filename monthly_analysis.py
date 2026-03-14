@@ -333,7 +333,6 @@ def send_telegram(message):
         payload = {
             "chat_id": TELEGRAM_CHAT_ID,
             "text": chunk,
-            "parse_mode": "Markdown",
             "disable_web_page_preview": True
         }
         try:
