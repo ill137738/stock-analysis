@@ -15,7 +15,7 @@ BRAVE_API_KEY = os.environ.get("BRAVE_API_KEY", "")
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
-NEWS_COUNT = 20  # 월간 분석용 뉴스 수 (더 많이)
+NEWS_COUNT = 70  # 월간 분석용 뉴스 수
 
 
 # 야후 파이낸스 티커 매핑 (한국 종목은 종목코드.KS 또는 .KQ)
