@@ -4,6 +4,11 @@ import time
 import os
 from datetime import datetime
 from stocks_config import STOCKS
+try:
+    import yfinance as yf
+    YFINANCE_AVAILABLE = True
+except ImportError:
+    YFINANCE_AVAILABLE = False
 
 # ===== 설정 =====
 BRAVE_API_KEY = os.environ.get("BRAVE_API_KEY", "")
@@ -11,6 +16,101 @@ OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
 NEWS_COUNT = 20  # 월간 분석용 뉴스 수 (더 많이)
+
+
+# 야후 파이낸스 티커 매핑 (한국 종목은 종목코드.KS 또는 .KQ)
+YAHOO_TICKERS = {
+    "CRSP": "CRSP",
+    "한화에어로스페이스": "012450.KS",
+    "JOBY": "JOBY",
+    "클래시스": "214150.KQ",
+    "Netflix": "NFLX",
+    "CoreWeave": "CRWV",
+    "Tempus AI": "TEM",
+    "이더리움": "ETH-USD",
+    "부동산": None  # 야후 파이낸스 해당 없음
+}
+
+
+def get_yahoo_data(stock_name):
+    """야후 파이낸스에서 재무 데이터 가져오기"""
+    if not YFINANCE_AVAILABLE:
+        return "yfinance 미설치"
+
+    ticker_symbol = YAHOO_TICKERS.get(stock_name)
+    if not ticker_symbol:
+        return "야후 파이낸스 데이터 없음"
+
+    try:
+        ticker = yf.Ticker(ticker_symbol)
+        info = ticker.info
+
+        # 주가 히스토리 (1달)
+        hist = ticker.history(period="1mo")
+        if not hist.empty:
+            current_price = hist['Close'].iloc[-1]
+            month_start_price = hist['Close'].iloc[0]
+            month_return = ((current_price - month_start_price) / month_start_price) * 100
+            month_high = hist['High'].max()
+            month_low = hist['Low'].min()
+        else:
+            current_price = month_return = month_high = month_low = None
+
+        # 52주 고저
+        week52_high = info.get('fiftyTwoWeekHigh')
+        week52_low = info.get('fiftyTwoWeekLow')
+
+        # 밸류에이션
+        per = info.get('trailingPE') or info.get('forwardPE')
+        psr = info.get('priceToSalesTrailing12Months')
+        pbr = info.get('priceToBook')
+        market_cap = info.get('marketCap')
+
+        # 실적
+        revenue = info.get('totalRevenue')
+        revenue_growth = info.get('revenueGrowth')
+        operating_margins = info.get('operatingMargins')
+        gross_margins = info.get('grossMargins')
+
+        # 포맷
+        def fmt(v, pct=False, price=False):
+            if v is None:
+                return "N/A"
+            if pct:
+                return f"{v*100:.1f}%"
+            if price:
+                return f"${v:,.2f}" if ticker_symbol and not ticker_symbol.endswith('.KS') and not ticker_symbol.endswith('.KQ') else f"{v:,.0f}"
+            if v > 1e9:
+                return f"${v/1e9:.1f}B"
+            if v > 1e6:
+                return f"${v/1e6:.1f}M"
+            return f"{v:.2f}"
+
+        result = f"""
+[야후 파이낸스 실시간 데이터]
+현재가: {fmt(current_price, price=True)}
+월간 수익률: {f'{month_return:.1f}%' if month_return is not None else 'N/A'}
+월간 고가: {fmt(month_high, price=True)} / 저가: {fmt(month_low, price=True)}
+52주 고가: {fmt(week52_high, price=True)} / 저가: {fmt(week52_low, price=True)}
+시가총액: {fmt(market_cap)}
+PER: {fmt(per)}
+PBR: {fmt(pbr)}
+PSR: {fmt(psr)}
+매출: {fmt(revenue)}
+매출 YoY 성장률: {fmt(revenue_growth, pct=True)}
+영업이익률: {fmt(operating_margins, pct=True)}
+매출총이익률: {fmt(gross_margins, pct=True)}"""
+
+        # 밸류에이션 효율 지표 계산
+        if revenue_growth is not None and operating_margins is not None and psr is not None and psr > 0:
+            val_score = (revenue_growth * 100 + operating_margins * 100) / 4 / psr
+            result += f"
+밸류에이션 효율 지표: {val_score:.2f} (1.0↑ 양호, 0.5↓ 고평가 신호)"
+
+        return result
+
+    except Exception as e:
+        return f"데이터 조회 실패: {e}"
 
 
 def search_news_monthly(stock_name, search_query):
@@ -83,18 +183,21 @@ def analyze_stock_monthly(stock_name, search_query, news_items):
     news_text = news_text or "최근 1달 내 관련 뉴스 없음"
 
     today = datetime.now().strftime("%Y년 %m월 %d일")
+    yahoo_data = get_yahoo_data(stock_name)
+
     user_prompt = f"""오늘은 {today}입니다. 다음 종목에 대해 월간 심층 분석을 수행하세요: {stock_name}
 
 ⚠️ 중요 지시사항:
-- 아래 제공된 최근 1달 뉴스를 반드시 분석의 핵심 근거로 사용하세요
-- 학습 데이터(2024년 이전)에 의존하지 말고, 반드시 제공된 뉴스 기반으로 작성하세요
-- 재무 지표(실적, PER, PSR 등)는 뉴스에 언급된 최신 수치를 사용하세요
-- 뉴스에 없는 정보는 "최신 데이터 미확인"으로 명시하세요
+- 아래 제공된 야후 파이낸스 실시간 데이터와 최근 1달 뉴스를 반드시 분석의 핵심 근거로 사용하세요
+- 학습 데이터(2024년 이전)에 의존하지 말고, 제공된 데이터 기반으로 작성하세요
+- 뉴스와 데이터에 없는 정보는 "최신 데이터 미확인"으로 명시하세요
+
+{yahoo_data}
 
 [최근 1달 뉴스 — 이것이 분석의 주요 근거입니다]
 {news_text}
 
-위 뉴스를 반드시 참고하여 아래 12개 섹션을 모두 포함하여 상세하게 분석하세요.
+위 뉴스를 반드시 참고하여 아래 섹션을 모두 포함하여 상세하게 분석하세요.
 
 ---
 
@@ -127,24 +230,16 @@ def analyze_stock_monthly(stock_name, search_query, news_items):
 
 ---
 
-🏦 4. 스마트머니 추적
-- 검증된 펀드(ARK, Baillie Gifford, Tiger Global 등) 보유 현황
-- 최근 분기 매수/매도/유지 여부
-- 하락 구간에서도 매수 지속했는가?
-- 데이터 출처 및 기준일 명시
-
----
-
-🚀 5. 가격 상승 모멘텀 (Catalysts)
+🚀 4. 가격 상승 모멘텀 (Catalysts)
 - 단기(3~6개월) 촉매 및 실현 가능성
 - 중기(6개월~2년) 촉매 및 실현 가능성
 - 가장 강력한 단일 촉매
 
 ---
 
-📈 6. Bull / Bear Case & 핵심 지표
+📈 5. Bull / Bear Case & 핵심 지표
 
-[재무 지표 — 반드시 포함]
+[재무 지표 — 뉴스에 언급된 최신 수치 사용, 없으면 "최신 데이터 미확인" 명시]
 - 최근 분기/연간 매출 및 YoY 상승률(%)
 - 영업이익 및 영업이익률(%)
 - PER (주가수익비율)
@@ -159,40 +254,29 @@ def analyze_stock_monthly(stock_name, search_query, news_items):
 
 ---
 
-🧭 7. 투자 판단 관점
+🧭 6. 투자 판단 관점
 - 어떤 투자자에게 적합한가 (성향/기간/목적)
 - 성향별 포트폴리오 추천 비중표 (공격적 / 중립적 / 보수적)
 
 ---
 
-📉 8. 공매도 현황 (Short Interest)
-- 현재 공매도 비율 및 추이
-- 판단: 🟢 숏스퀴즈 가능성 / 🟡 모니터링 / 🔴 경고 신호
-
----
-
-🕵️ 9. 내부자 거래 추적
-- 최근 6개월 내부자 매수/매도 현황
-- 판단: 📥 강세 신호 / 📤 경고 신호 / ⚪ 중립
-
----
-
-💰 10. 적정 매수 구간
+💰 7. 적정 매수 구간
 - 역사적 밸류에이션 대비 현재 위치
 - 분할 매수 1차·2차·3차 구간
 - 매수 매력도: 🟢 저평가 / 🟡 적정 / 🔴 고평가
 
 ---
 
-🚪 11. Exit 전략 프레임
-- 목표가 기반 Exit (1차/2차/최종)
-- Thesis 붕괴 Exit 조건
-- 손절 기준
+🚪 8. Thesis 붕괴 Exit 조건
+- 본질 가치를 훼손하는 사건이 발생했는가? (예: 핵심 경영진 교체, 주력 제품 리콜, 규제 제재, 회계 부정)
+- 시대 흐름이 반전됐는가? (예: 방산주 → 전쟁 종전, 이더리움 → 치명적 보안 취약점 발견)
+- 더 나은 대안이 나타났는가?
+- 위 조건 중 현재 해당되는 것이 있다면 명시하세요
 
 ---
 
-📊 12. 급등/급락 원인 분석 (최근 ±20% 이상 있었다면)
-- 원인 유형 분류
+📊 9. 급등/급락 원인 분석 (최근 ±20% 이상 있었다면)
+- 원인 유형 분류 (펀더멘털 변화 / 수급 이벤트 / 매크로 충격 / 루머 / 내부자 이슈)
 - Thesis 유지/훼손 여부
 - 결론: "이번 [급등/급락]은 [원인 유형]으로 판단됩니다. Thesis는 [유지/훼손]되었으며, 현재는 [매수 기회 / 관망 / 경고 신호]로 볼 수 있습니다."
 
@@ -279,9 +363,7 @@ def main():
             continue
 
         print(f"\n[{stock_name}] 분석 시작...")
-        news_items = search_news_monthly(stock_name, search_query)
-        print(f"  뉴스 {len(news_items)}건 검색됨")
-        analysis = analyze_stock_monthly(stock_name, search_query, news_items)
+        analysis = analyze_stock_monthly(stock_name, search_query)
 
         if analysis:
             # 종목 헤더 추가
