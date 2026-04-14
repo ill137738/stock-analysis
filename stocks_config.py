@@ -4,6 +4,7 @@ STOCKS = {
     "클래시스": "클래시스 KOSDAQ 214150",
     "시프트업": "시프트업 krx 462870",
     "Tesla": "TSLA",
+    "PLTR": "Palantir",
     "AMD": "AMD",
     "CRSP": "CRISPR Therapeutics CRSP stock",
     "CoreWeave": "CoreWeave CRWV stock",
