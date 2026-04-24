@@ -121,7 +121,7 @@ def analyze_all_stocks(news_data):
         "X-Title": "Morning Stock Analysis"
     }
     payload = {
-        "model": "deepseek/deepseek-v3.2",
+        "model": "deepseek/deepseek-v4-flash",
         "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt}
