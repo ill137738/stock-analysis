@@ -391,7 +391,7 @@ def analyze_stock_monthly(stock_name, search_query, news_items):
         "X-Title": "Monthly Stock Deep Analysis"
     }
     payload = {
-        "model": "deepseek/deepseek-v4-flash",
+        "model": "deepseek/deepseek-v3.2",
         "messages": [
             {"role": "system", "content": MONTHLY_SYSTEM_PROMPT},
             {"role": "user", "content": user_prompt}
