@@ -3,7 +3,7 @@ STOCKS = {
     "한화에어로스페이스": "한화에어로스페이스",
     "클래시스": "클래시스 KOSDAQ 214150",
     "시프트업": "시프트업 krx 462870",
-    "Tesla": "TSLA",
+    "Amazon": "AMZN",
     "PLTR": "Palantir",
     "CRSP": "CRISPR Therapeutics CRSP stock",
     "CoreWeave": "CoreWeave CRWV stock",
