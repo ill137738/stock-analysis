@@ -3,11 +3,11 @@ STOCKS = {
     "한화에어로스페이스": "한화에어로스페이스",
     "클래시스": "클래시스 KOSDAQ 214150",
     "시프트업": "시프트업 krx 462870",
-    "Amazon": "AMZN",
-    "Google": "googl",
+    "Amazon": "AMZN stock",
+    "Google": "googl stock",
     "CRSP": "CRISPR Therapeutics CRSP stock",
+    "META": "META stock",
     "CoreWeave": "CoreWeave CRWV stock",
-    "JOBY": "Joby Aviation JOBY stock",
     "이더리움": "ethereum",
     "솔라나": "solana"
 }
