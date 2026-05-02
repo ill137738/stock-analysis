@@ -4,7 +4,7 @@ STOCKS = {
     "클래시스": "클래시스 KOSDAQ 214150",
     "시프트업": "시프트업 krx 462870",
     "Amazon": "AMZN",
-    "PLTR": "Palantir",
+    "Google": "googl",
     "CRSP": "CRISPR Therapeutics CRSP stock",
     "CoreWeave": "CoreWeave CRWV stock",
     "JOBY": "Joby Aviation JOBY stock",
