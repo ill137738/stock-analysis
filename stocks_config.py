@@ -2,7 +2,8 @@
 STOCKS = {
     "한화에어로스페이스": "한화에어로스페이스",
     "클래시스": "클래시스 KOSDAQ 214150",
-    "시프트업": "시프트업 krx 462870",
+    "Nvidia": "NVDA stock",
+    "Apple": "AAPL stock",
     "Amazon": "AMZN stock",
     "Google": "googl stock",
     "CRSP": "CRISPR Therapeutics CRSP stock",
