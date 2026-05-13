@@ -8,6 +8,7 @@ STOCKS = {
     "Apple": "AAPL stock",
     "Amazon": "AMZN stock",
     "Google": "googl stock",
+    "Circle": "CRCL stock",
     "CRSP": "CRISPR Therapeutics CRSP stock",
     "META": "META stock",
     "CoreWeave": "CoreWeave CRWV stock",
