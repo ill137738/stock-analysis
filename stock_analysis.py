@@ -11,7 +11,7 @@ OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
 
-
+MAX_TOKENS = 8192 # 기본값, 본문 양 제어용
 NEWS_COUNT = 15  # 종목당 뉴스 검색 수
 # =====================================
 
@@ -22,12 +22,12 @@ def search_news(stock_name, search_query):
     headers = {
         "Accept": "application/json",
         "Accept-Encoding": "gzip",
-        "maximum_number_of_tokens": 8192  # 기본값, 본문 양 제어용
         "X-Subscription-Token": BRAVE_API_KEY
     }
     # 한글 포함 쿼리는 한국어 검색
     has_korean = any(ord(c) > 0x1100 for c in search_query)
     params = {
+        "maximum_number_of_tokens": MAX_TOKENS,
         "q": search_query,
         "count": NEWS_COUNT,
         "freshness": "pd"
