@@ -17,7 +17,7 @@ NEWS_COUNT = 15  # 종목당 뉴스 검색 수
 
 
 def search_news(stock_name, search_query):
-    """브레이브 API로 뉴스 검색"""
+    """브레이브 LLM Context API로 뉴스 검색 (본문 청크 포함)"""
     url = "https://api.search.brave.com/res/v1/llm/context"
     headers = {
         "Accept": "application/json",
@@ -45,9 +45,19 @@ def search_news(stock_name, search_query):
         news_items = []
         for item in results:
             title = item.get("title", "")
-            description = item.get("description", "")
-            source = item.get("meta_url", {}).get("hostname", "") or item.get("source", "")
-            age = item.get("age", "")
+
+            # LLM Context는 description이 아니라 snippets 배열로 본문 청크를 줌
+            snippets = item.get("snippets", [])
+            if isinstance(snippets, list):
+                body = "\n".join(s for s in snippets if s)
+            else:
+                body = str(snippets) if snippets else ""
+
+            # 최상위 hostname 필드 사용 (News Search의 meta_url.hostname 구조 아님)
+            source = item.get("hostname", "") or item.get("meta_url", {}).get("hostname", "")
+
+            # LLM Context는 page_age 필드를 씀
+            age = item.get("page_age", "") or item.get("age", "")
 
             # 24시간 넘은 뉴스 제외 (days ago, weeks ago, months ago)
             age_lower = age.lower()
@@ -55,9 +65,14 @@ def search_news(stock_name, search_query):
                 continue
 
             url_link = item.get("url", "")
+
+            # 본문이 거의 없는 결과는 스킵 (낚시 제목만 받지 않기 위한 안전장치 - 레이어 4)
+            if len(body) < 50:
+                continue
+
             news_items.append({
                 "title": title,
-                "description": description,
+                "body": body,
                 "source": source,
                 "age": age,
                 "url": url_link
@@ -77,11 +92,11 @@ def analyze_all_stocks(news_data):
         news_prompt += f"### {stock}\n"
         for i, item in enumerate(items, 1):
             source_info = f" ({item['source']}" + (f", {item['age']}" if item['age'] else "") + ")"
-            news_prompt += f"{i}. {item['title']}{source_info}\n"
+            news_prompt += f"{i}. [제목] {item['title']}{source_info}\n"
             if item.get('url'):
                 news_prompt += f"   URL: {item['url']}\n"
-            if item['description']:
-                news_prompt += f"   {item['description']}\n"
+            if item['body']:
+                news_prompt += f"   [본문]\n{item['body']}\n"
         news_prompt += "\n"
 
     system_prompt = """당신은 투자 뉴스 분석 전문가입니다.
@@ -99,6 +114,7 @@ def analyze_all_stocks(news_data):
 보도의 주체와 확실성을 보존하세요. '~으로 알려졌다(reportedly)'는 '~했다(did)'로 단정하지 마세요."""
 
     user_prompt = f"""아래 종목들의 뉴스를 분석하고 반드시 순수 JSON 형식으로만 응답하세요.
+각 뉴스는 [제목]과 [본문]으로 구성됩니다. 분석은 본문을 우선 근거로 하세요.
 
 {news_prompt}
 
