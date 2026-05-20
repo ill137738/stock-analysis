@@ -18,10 +18,11 @@ NEWS_COUNT = 15  # 종목당 뉴스 검색 수
 
 def search_news(stock_name, search_query):
     """브레이브 API로 뉴스 검색"""
-    url = "https://api.search.brave.com/res/v1/news/search"
+    url = "https://api.search.brave.com/res/v1/llm/context"
     headers = {
         "Accept": "application/json",
         "Accept-Encoding": "gzip",
+        "maximum_number_of_tokens": 8192  # 기본값, 본문 양 제어용
         "X-Subscription-Token": BRAVE_API_KEY
     }
     # 한글 포함 쿼리는 한국어 검색
