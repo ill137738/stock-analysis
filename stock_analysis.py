@@ -29,7 +29,7 @@ def search_news(stock_name, search_query):
     params = {
         "q": search_query,
         "count": NEWS_COUNT,
-        "freshness": "pd"
+        "freshness": "pd",
         "extra_snippets": "true" # 브레이브 추가 스피넷
     }
     if has_korean:
