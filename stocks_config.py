@@ -8,6 +8,7 @@ STOCKS = {
     "Google": "googl stock",
     "Nebius Group": "NBIS stock",
     "Dell": "DELL stock",
+    "ServiceNow": "NOW stock",
     "AMD": "AMD stock",
     "Intell": "INTC stock",
     "Arm Holdings": "Arm stock",
