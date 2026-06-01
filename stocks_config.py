@@ -3,7 +3,6 @@ STOCKS = {
     "한화에어로스페이스": "한화에어로스페이스",
     "클래시스": "클래시스 KOSDAQ 214150",
     "파마리서치": "파마리서치 KOSDAQ 214450",
-    "펄어비스": "펄어비스 KOSDAQ 263750",
     "Nvidia": "NVDA stock",
     "Apple": "AAPL stock",
     "Amazon": "AMZN stock",
