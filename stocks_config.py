@@ -2,7 +2,6 @@
 STOCKS = {
     "한화에어로스페이스": "한화에어로스페이스",
     "클래시스": "클래시스 KOSDAQ 214150",
-    "파마리서치": "파마리서치 KOSDAQ 214450",
     "Nvidia": "NVDA stock",
     "Apple": "AAPL stock",
     "Amazon": "AMZN stock",
@@ -11,6 +10,7 @@ STOCKS = {
     "Dell": "DELL stock",
     "AMD": "AMD stock",
     "Intell": "INTC stock",
+    "Arm Holdings": "Arm stock",
     "META": "META stock",
     "CoreWeave": "CoreWeave CRWV stock",
     "이더리움": "ethereum",
