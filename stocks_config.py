@@ -11,6 +11,7 @@ STOCKS = {
     "AMD": "AMD stock",
     "Intell": "INTC stock",
     "Arm Holdings": "Arm stock",
+    "SandisK": "SNDK stock",
     "META": "META stock",
     "CoreWeave": "CoreWeave CRWV stock",
     "이더리움": "ethereum",
