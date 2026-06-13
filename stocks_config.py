@@ -7,13 +7,13 @@ STOCKS = {
     "Google": "googl stock",
     "Nebius Group": "NBIS stock",
     "Dell": "DELL stock",
-    "ServiceNow": "NOW stock",
+    "Marvell Technology": "MRVL stock",
+    "CrowdStrike": "CRWD stock",
     "AMD": "AMD stock",
     "Intell": "INTC stock",
     "Arm Holdings": "Arm stock",
     "Sandisk": "SNDK stock",
     "META": "META stock",
-    "CoreWeave": "CoreWeave CRWV stock",
     "이더리움": "ethereum",
     "솔라나": "solana"
 }
