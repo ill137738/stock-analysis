@@ -13,7 +13,7 @@ STOCKS = {
     "Intell": "INTC stock",
     "Arm Holdings": "Arm stock",
     "Sandisk": "SNDK stock",
-    "META": "META stock",
+    "Tesla": "TSLA stock",
     "이더리움": "ethereum",
     "솔라나": "solana"
 }
